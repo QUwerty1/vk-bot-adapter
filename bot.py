@@ -1,19 +1,73 @@
 import os
+import requests
 
+import dto
 import dotenv
-from vkbottle import Bot
-from vkbottle.bot import Message
+
+from datetime import datetime
+from vkbottle import Callback, GroupEventType, Keyboard
+from vkbottle.bot import Bot, Message, MessageEvent, rules
 from vkbottle.callback import BotCallback
+
+from dto import SendPlaceInfoResponse
 
 dotenv.load_dotenv('.env')
 
-
 TOKEN = os.environ['TOKEN']
-callback = BotCallback(url=os.environ['URL'], title="my server")
+BACKEND_URL = os.environ['BACKEND_URL']
+
+callback = BotCallback(url=os.environ['URL'], title='Сервер 1')
 bot = Bot(token=TOKEN, callback=callback)
 
 
-@bot.on.message(text="привет")
-async def hi_handler(message: Message):
-    users_info = await bot.api.users.get(user_ids=[message.from_id])
-    await message.answer(f"Приветствую, {users_info[0].first_name}")
+@bot.on.message()
+def message_and_command_handler(message: Message):
+
+    if message.text.startswith('/'):
+        cmd = dto.Command(
+            user_id=str(message.user_id),
+            date_time=datetime.fromtimestamp(message.date),
+            name=message.text[1:],
+            place=dto.SendPlaceInfoRequest(
+                chat_id=str(message.peer_id),
+            )
+        )
+
+        requests.post(
+            url=f'{BACKEND_URL}/command',
+            json=cmd.model_dump_json(),
+        )
+
+    else:
+        msg = dto.Message(
+            user_id=str(message.from_id),
+            text=message.text,
+            place=dto.SendPlaceInfoRequest(
+                chat_id=str(message.peer_id),
+            ),
+        )
+
+        requests.post(
+            url=f'{BACKEND_URL}/user_message',
+            json=msg.model_dump_json(),
+        )
+
+
+@bot.on.raw_event(GroupEventType.MESSAGE_EVENT, MessageEvent)
+async def keyboard_input_handler(event: MessageEvent):
+    enter_keyboard = dto.EnterKeyboard(
+        user_id=str(event.user_id),
+        button=event.payload.get('cmd'),
+        date_time=datetime.now(),
+        place=SendPlaceInfoResponse(
+            chat_id=str(event.peer_id),
+            message_id='' #FIXME при нажатии на кнопку не отправляется сообщение
+        )
+    )
+
+    requests.post(
+        url=f'{BACKEND_URL}/enter_keyboard',
+        json=enter_keyboard.model_dump_json(),
+    )
+
+    await event.send_empty_answer()
