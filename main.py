@@ -1,8 +1,9 @@
+import dto
+
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from vkbottle import Keyboard, Callback
 
-import dto
 from bot import bot
 from fastapi import Response, Request
 

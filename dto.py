@@ -16,7 +16,7 @@ class SendPlaceInfoResponse(BaseModel):
 class SendPlaceInfoRequestWithMessage(BaseModel):
     user_id: str
     place: SendPlaceInfoResponse
-    date_time: datetime
+    date_time: str
 
 
 class SendPlaceInfoRequest(BaseModel):
@@ -27,14 +27,14 @@ class Command(BaseModel):
     user_id: str
     place: SendPlaceInfoRequest
     name: str
-    date_time: datetime
+    date_time: str
 
 
 class EnterKeyboard(BaseModel):
     user_id: str
     button: str
     place: SendPlaceInfoResponse
-    date_time: datetime
+    date_time: str
 
 
 
@@ -55,7 +55,7 @@ class Button(BaseModel):
 class KeyboardResponse(BaseModel):
     user_id: str
     place: SendPlaceInfoResponse
-    date_time: datetime
+    date_time: str
 
 
 class KeyboardRequestUpdate(BaseModel):
@@ -72,12 +72,13 @@ class KeyboardRequest(BaseModel):
     buttons: List[Button]
 
 
-class ImageURL(BaseModel):
-    #TODO
-    pass
-
-
 class Image(BaseModel):
-    #TODO
-    pass
+    attachments_base64: List[str] = []
+    user_id: str = None
+    place: SendPlaceInfoRequest = None
+    date_time: str = None
+
+
+class ImageURL(BaseModel):
+    attachment_urls: List[str]
 
