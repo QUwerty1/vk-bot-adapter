@@ -36,14 +36,14 @@ async def vk_handler(req: Request):
 
 
 @app.post('/keyboard/create')
-def create_keyboard(keyboard_request: dto.KeyboardRequest):
+async def create_keyboard(keyboard_request: dto.KeyboardRequest):
 
     keyboard = Keyboard(one_time=False, inline=False)
 
     for btn in keyboard_request.buttons:
         keyboard.add(Callback(btn.text, payload={'cmd': btn.text}))
 
-    bot.api.messages.send(
+    await bot.api.messages.send(
         user_id=keyboard_request.user_id,
         random_id=0,
         peer_id=keyboard_request.place.chat_id,
@@ -53,13 +53,13 @@ def create_keyboard(keyboard_request: dto.KeyboardRequest):
 
 
 @app.post("/keyboard/update")
-def update_keyboard(keyboard_request: dto.KeyboardRequestUpdate):
+async def update_keyboard(keyboard_request: dto.KeyboardRequestUpdate):
     keyboard = Keyboard(one_time=False, inline=False)
 
     for btn in keyboard_request.buttons:
         keyboard.add(Callback(btn.text, payload={'cmd': btn.text}))
 
-    bot.api.messages.send(
+    await bot.api.messages.send(
         user_id=keyboard_request.user_id,
         random_id=0,
         peer_id=keyboard_request.place.place.chat_id,
@@ -69,8 +69,8 @@ def update_keyboard(keyboard_request: dto.KeyboardRequestUpdate):
 
 
 @app.post('/message')
-def send_message(message: dto.Message):
-    bot.api.messages.send(
+async def send_message(message: dto.Message):
+    await bot.api.messages.send(
         user_id=message.user_id,
         random_id=0,
         peer_id=message.place.chat_id,

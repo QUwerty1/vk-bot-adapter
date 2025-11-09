@@ -17,7 +17,7 @@ dotenv.load_dotenv('.env')
 TOKEN = os.environ['TOKEN']
 BACKEND_URL = os.environ['BACKEND_URL']
 
-callback = BotCallback(url=os.environ['URL'], title='Сервер 1')
+callback = BotCallback(url=os.environ['URL'], title='vk-bot-adapter')
 bot = Bot(token=TOKEN, callback=callback)
 
 
@@ -26,7 +26,7 @@ async def message_and_command_handler(message: Message):
 
     if message.text.startswith('/'):
         cmd = dto.Command(
-            user_id=str(message.user_id),
+            user_id=str(message.from_id),
             date_time=datetime.fromtimestamp(message.date).isoformat(),
             name=message.text[1:],
             place=dto.SendPlaceInfoRequest(
@@ -36,7 +36,7 @@ async def message_and_command_handler(message: Message):
 
         requests.post(
             url=f'{BACKEND_URL}/command',
-            json=cmd.model_dump_json(),
+            json=cmd.model_dump(),
         )
 
     else:
@@ -52,7 +52,7 @@ async def message_and_command_handler(message: Message):
                 url=f'{BACKEND_URL}/user_message',
                 json=msg.model_dump(),
             )
-        if message.attachments is not None:
+        if message.attachments is not None and len(message.attachments) > 0:
 
             attachments_base64 = []
             for photo in message.get_photo_attachments():
@@ -88,7 +88,7 @@ async def keyboard_input_handler(event: MessageEvent):
     )
 
     requests.post(
-        url=f'{BACKEND_URL}/enter_keyboard',
+        url=f'{BACKEND_URL}/keyboard/input',
         json=enter_keyboard.model_dump(),
     )
 
