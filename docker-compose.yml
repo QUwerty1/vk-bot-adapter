@@ -1,0 +1,31 @@
+services:
+  vk-connector:
+    image: cajodev/vk-connector:latest
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.hostname == oar
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.vk-connector.entrypoints=httpLocal"
+        - "traefik.http.routers.vk-connector.rule=Host(`study.dev.fardrive.ru`) && PathPrefix(`/vk-connector`)"
+        - "traefik.http.routers.vk-connector.tls=true"
+        - "traefik.http.services.vk-connector.loadbalancer.server.port=8001"
+        - "traefik.http.middlewares.vk-connector-stripprefix.stripprefix.prefixes=/vk-connector"
+        - "traefik.http.routers.vk-connector.middlewares=vk-connector-stripprefix"
+        - "traefik.docker.network=proxy"
+    environment:
+      - PORT=8001
+      - URL=${URL}     
+      - TOKEN=${TOKEN}
+      - BACKEND_URL=${BACKEND_URL}
+    networks:
+      - default
+      - proxy
+
+networks:
+  proxy:
+    external: true
