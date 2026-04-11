@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel
 
 
@@ -74,9 +74,9 @@ class KeyboardRequest(BaseModel):
 
 class Image(BaseModel):
     attachments_base64: List[str] = []
-    user_id: str = None
-    place: SendPlaceInfoRequest = None
-    date_time: str = None
+    user_id: str = ""
+    place: Optional[SendPlaceInfoRequest] = None
+    date_time: str = ""
 
 
 class ImageURL(BaseModel):

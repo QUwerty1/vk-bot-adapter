@@ -16,7 +16,7 @@ async def lifespan(_: FastAPI):
     confirmation_code, secret_key = await bot.setup_webhook()
     yield
 
-app = FastAPI(lifespan=lifespan, port=5000)
+app = FastAPI(lifespan=lifespan)
 
 
 @app.post('/')
@@ -29,10 +29,10 @@ async def vk_handler(req: Request):
     print(data)
 
     if data['type'] == 'confirmation':
-        return Response(confirmation_code)
+        return Response(content=confirmation_code)
     await bot.process_event(data)
 
-    return Response('ok')
+    return Response(content='ok')
 
 
 @app.post('/keyboard/create')
@@ -44,15 +44,17 @@ async def create_keyboard(keyboard_request: dto.KeyboardRequest):
         keyboard.add(Callback(btn.text, payload={'cmd': btn.text}))
 
     await bot.api.messages.send(
-        user_id=keyboard_request.user_id,
+        user_id=int(keyboard_request.user_id),
         random_id=0,
-        peer_id=keyboard_request.place.chat_id,
+        peer_id=int(keyboard_request.place.chat_id),
         message=keyboard_request.title,
         keyboard=keyboard.get_json(),
     )
+    
+    return Response(content='ok')
 
 
-@app.post("/keyboard/update")
+@app.post('/keyboard/update')
 async def update_keyboard(keyboard_request: dto.KeyboardRequestUpdate):
     keyboard = Keyboard(one_time=False, inline=False)
 
@@ -60,19 +62,23 @@ async def update_keyboard(keyboard_request: dto.KeyboardRequestUpdate):
         keyboard.add(Callback(btn.text, payload={'cmd': btn.text}))
 
     await bot.api.messages.send(
-        user_id=keyboard_request.user_id,
+        user_id=int(keyboard_request.user_id),
         random_id=0,
-        peer_id=keyboard_request.place.place.chat_id,
+        peer_id=int(keyboard_request.place.place.chat_id),
         message=keyboard_request.title,
         keyboard=keyboard.get_json(),
     )
+    
+    return Response(content='ok')
 
 
 @app.post('/message')
 async def send_message(message: dto.Message):
     await bot.api.messages.send(
-        user_id=message.user_id,
+        user_id=int(message.user_id),
         random_id=0,
-        peer_id=message.place.chat_id,
+        peer_id=int(message.place.chat_id),
         message=message.text,
     )
+    
+    return Response(content='ok')
