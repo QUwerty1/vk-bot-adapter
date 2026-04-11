@@ -5,6 +5,8 @@ from datetime import datetime
 from fastapi import FastAPI
 from vkbottle import Keyboard, Callback
 
+from mangum import Mangum
+
 from bot import bot
 from fastapi import Response, Request
 
@@ -123,3 +125,5 @@ async def send_message(message: dto.Message):
             content=dto.Error(code=500, message=str(e)).model_dump_json(),
             media_type='application/json',
         )
+
+handler = Mangum(app)
