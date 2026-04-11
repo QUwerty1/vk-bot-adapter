@@ -16,6 +16,7 @@ dotenv.load_dotenv('.env')
 
 TOKEN = os.environ['TOKEN']
 BACKEND_URL = os.environ['BACKEND_URL']
+HEADERS = {'X-Connector-Name': 'vk'}
 
 callback = BotCallback(url=os.environ['URL'], title='vk-bot-adapter')
 bot = Bot(token=TOKEN, callback=callback)
@@ -37,6 +38,7 @@ async def message_and_command_handler(message: Message):
         requests.post(
             url=f'{BACKEND_URL}/command',
             json=cmd.model_dump(),
+            headers=HEADERS,
         )
 
     else:
@@ -47,10 +49,12 @@ async def message_and_command_handler(message: Message):
                 place=dto.SendPlaceInfoRequest(
                     chat_id=str(message.peer_id),
                 ),
+                date_time=datetime.fromtimestamp(message.date).isoformat(),
             )
             requests.post(
                 url=f'{BACKEND_URL}/user_message',
                 json=msg.model_dump(),
+                headers=HEADERS,
             )
         if message.attachments is not None and len(message.attachments) > 0:
 
@@ -71,6 +75,7 @@ async def message_and_command_handler(message: Message):
             requests.post(
                 url=f'{BACKEND_URL}/image',
                 json=images.model_dump(),
+                headers=HEADERS,
             )
 
 
@@ -90,6 +95,7 @@ async def keyboard_input_handler(event: MessageEvent):
     requests.post(
         url=f'{BACKEND_URL}/keyboard/input',
         json=enter_keyboard.model_dump(),
+        headers=HEADERS,
     )
 
     await event.send_empty_answer()

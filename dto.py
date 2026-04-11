@@ -42,6 +42,7 @@ class Message(BaseModel):
     user_id: str
     place: SendPlaceInfoRequest
     text: str
+    date_time: str
 
 
 class EnterButtonKeyboard(BaseModel):
