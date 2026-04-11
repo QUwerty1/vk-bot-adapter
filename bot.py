@@ -59,32 +59,42 @@ async def message_and_command_handler(message: Message):
         if message.attachments is not None and len(message.attachments) > 0:
 
             attachments_base64 = []
-            for photo in message.get_photo_attachments():
-                photo_file = requests.get(photo.sizes[-4].url)
-                attachments_base64.append(base64.b64encode(photo_file.content))
+            photo_attachments = message.get_photo_attachments()
+            if photo_attachments:
+                for photo in photo_attachments:
+                    if photo.sizes and len(photo.sizes) >= 4:
+                        photo_url = photo.sizes[-4].url
+                        if photo_url:
+                            photo_file = requests.get(photo_url)
+                            attachments_base64.append(base64.b64encode(photo_file.content))
 
-            images = dto.Image(
-                user_id=str(message.from_id),
-                place=dto.SendPlaceInfoRequest(
-                    chat_id=str(message.peer_id),
-                ),
-                attachments_base64=attachments_base64,
-                date_time=datetime.fromtimestamp(message.date).isoformat()
-            )
+            if attachments_base64:
+                images = dto.Image(
+                    user_id=str(message.from_id),
+                    place=dto.SendPlaceInfoRequest(
+                        chat_id=str(message.peer_id),
+                    ),
+                    attachments_base64=attachments_base64,
+                    date_time=datetime.fromtimestamp(message.date).isoformat()
+                )
 
-            requests.post(
-                url=f'{BACKEND_URL}/image',
-                json=images.model_dump(),
-                headers=HEADERS,
-            )
+                requests.post(
+                    url=f'{BACKEND_URL}/image',
+                    json=images.model_dump(),
+                    headers=HEADERS,
+                )
 
 
 
 @bot.on.raw_event(GroupEventType.MESSAGE_EVENT, MessageEvent)
 async def keyboard_input_handler(event: MessageEvent):
+    button_value = event.payload.get('cmd') if event.payload else None
+    if button_value is None:
+        return
+
     enter_keyboard = dto.EnterKeyboard(
         user_id=str(event.user_id),
-        button=event.payload.get('cmd'),
+        button=button_value,
         date_time=datetime.now().isoformat(),
         place=SendPlaceInfoResponse(
             chat_id=str(event.peer_id),
