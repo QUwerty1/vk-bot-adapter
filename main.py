@@ -126,4 +126,8 @@ async def send_message(message: dto.Message):
             media_type='application/json',
         )
 
+@app.get('/health-check')
+async def check_health():
+    return Response(status_code=200, content='ok')
+
 handler = Mangum(app)
