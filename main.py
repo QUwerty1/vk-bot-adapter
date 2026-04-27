@@ -47,6 +47,7 @@ async def create_keyboard(keyboard_request: dto.KeyboardRequest):
 
         for btn in keyboard_request.buttons:
             keyboard.add(Callback(btn.text, payload={'cmd': btn.text}))
+            keyboard.row()
 
         result = await bot.api.messages.send(
             user_id=int(keyboard_request.user_id),

@@ -101,11 +101,13 @@ async def keyboard_input_handler(event: MessageEvent):
             message_id=''
         )
     )
+    try:
+        await event.send_empty_answer()
 
-    requests.post(
-        url=f'{BACKEND_URL}/keyboard/input',
-        json=enter_keyboard.model_dump(),
-        headers=HEADERS,
-    )
-
-    await event.send_empty_answer()
+        requests.post(
+            url=f'{BACKEND_URL}/keyboard/input',
+            json=enter_keyboard.model_dump(),
+            headers=HEADERS,
+        )
+    except Exception as e:
+        pass
